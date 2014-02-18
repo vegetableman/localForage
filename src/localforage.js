@@ -98,11 +98,11 @@
     // Check to see if IndexedDB is available; it's our preferred backend
     // library.
     if (indexedDB) {
-        storageLibrary = localForage.INDEXEDDB;
+        storageLibrary = INDEXEDDB;
     } else if (window.openDatabase) { // WebSQL is available, so we'll use that.
-        storageLibrary = localForage.WEBSQL;
+        storageLibrary = WEBSQL;
     } else { // If nothing else is available, we use localStorage.
-        storageLibrary = localForage.LOCALSTORAGE;
+        storageLibrary = LOCALSTORAGE;
     }
 
     // Set the (default) driver.
