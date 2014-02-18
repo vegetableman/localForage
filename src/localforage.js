@@ -1,6 +1,10 @@
 (function() {
     'use strict';
 
+    var localStorageWrapper = require('./drivers/localstorage');
+    var asyncStorage = require('./drivers/indexeddb');
+    var webSQLStorage = require('./drivers/websql');
+
     // Promises!
     var Promise = window.Promise;
 
@@ -29,15 +33,19 @@
     // The actual localForage object that we expose as a module or via a global.
     // It's extended by pulling in one of our other libraries.
     var _this = this;
-    var localForage = {
-        INDEXEDDB: 'asyncStorage',
-        LOCALSTORAGE: 'localStorageWrapper',
-        WEBSQL: 'webSQLStorage',
+    var INDEXEDDB = "asyncStorage";
+    var WEBSQL = "webSQLStorage";
+    var LOCALSTORAGE = "localStorageWrapper";
 
-        setDriver: function(driverName, callback) {
+    var localForage = {};
+
+    localForage[INDEXEDDB] = asyncStorage;
+    localForage[LOCALSTORAGE] =  localStorageWrapper;
+    localForage[WEBSQL] = webSQLStorage;
+    localForage.setDriver = function(driverName, callback) {
             return new Promise(function(resolve, reject) {
-                if ((!indexedDB && driverName === localForage.INDEXEDDB) ||
-                    (!window.openDatabase && driverName === localForage.WEBSQL)) {
+                if ((!indexedDB && driver === Object.keys(localForage)[0].toString()) ||
+                    (!window.openDatabase && driverName === Object.keys(localForage)[2].toString())) {
                     if (callback) {
                         callback(localForage);
                     }
@@ -60,7 +68,7 @@
                         resolve(localForage);
                     });
                 } else if (moduleType === MODULE_TYPE_EXPORT) {
-                    localForage._extend(require('./' + driverName));
+                    localForage._extend(localForage[driverName]);
 
                     if (callback) {
                         callback(localForage);
@@ -77,16 +85,14 @@
                     resolve(localForage);
                 }
             });
-        },
-
-        _extend: function(libraryMethodsAndProperties) {
+        };
+     localForage._extend = function(libraryMethodsAndProperties) {
             for (var i in libraryMethodsAndProperties) {
                 if (libraryMethodsAndProperties.hasOwnProperty(i)) {
                     this[i] = libraryMethodsAndProperties[i];
                 }
             }
-        }
-    };
+        };
 
     var storageLibrary;
     // Check to see if IndexedDB is available; it's our preferred backend

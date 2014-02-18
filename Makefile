@@ -3,3 +3,10 @@ test: build
 
 build:
 	sh ./build.sh
+
+browserify:
+	sh ./browserify.sh
+
+browserify-debug:
+	sh ./browserify.sh debug
+
